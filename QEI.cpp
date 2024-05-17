@@ -164,6 +164,7 @@ QEI::QEI(PinName channelA,
     // Index is optional.
     if (index != NC)
     {
+        z_flag_=false;
         index_.rise(Callback<void()>(this, &QEI::index));
     }
 }
@@ -254,15 +255,21 @@ void QEI::encode(void)
         if ((prevState_ == 0x3 && currState_ == 0x0) ||
             (prevState_ == 0x0 && currState_ == 0x3))
         {
-
             pulses_++;
+            if(z_flag_){
+                revolutions_++;
+                z_flag_=false;
+            }
         }
         // 10->01->10->01 is clockwise rotation or "backward".
         else if ((prevState_ == 0x2 && currState_ == 0x1) ||
                  (prevState_ == 0x1 && currState_ == 0x2))
         {
-
             pulses_--;
+            if(z_flag_){
+                revolutions_--;
+                z_flag_=false;
+            }
         }
     }
     else if (encoding_ == X4_ENCODING)
@@ -275,10 +282,7 @@ void QEI::encode(void)
             // gives 0 if clockwise rotation and 1 if counter clockwise rotation.
             change = (prevState_ & PREV_MASK) ^ ((currState_ & CURR_MASK) >> 1);
 
-            if (change == 0)
-            {
-                change = -1;
-            }
+            if (change == 0) change = -1;
 
             pulses_ -= change;
         }
@@ -289,6 +293,5 @@ void QEI::encode(void)
 
 void QEI::index(void)
 {
-
-    revolutions_++;
+    z_flag_=true;
 }
