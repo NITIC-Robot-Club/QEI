@@ -236,6 +236,8 @@ private:
     int prevState_;
     int currState_;
 
+    bool z_flag_;
+
     volatile int pulses_;
     volatile int revolutions_;
 };
